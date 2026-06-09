@@ -106,9 +106,7 @@
           </svg>
         </a>
       </div>
-      <el-button style="float: left;margin-top: -20px;margin-right: 3px" type="primary" :icon="Histogram" link
-        @click="showMark.show = true" />
-        <el-button style="float: left;margin-top: -20px;margin-left: 39px" type="primary" :icon="FullScreen" link
+        <el-button style="float: left;margin-top: -20px;margin-right: 3px" type="primary" :icon="FullScreen" link
         @click="isFullScreen = true" />
       <el-button style="float: right;margin-top: -20px;margin-right: 3px" type="primary" :icon="TrendCharts" link
         v-if="!chartShow" @click="chartShow = true" />
@@ -224,36 +222,21 @@
       </span>
     </template>
   </el-dialog>
-  <MarkUI :show="showMark" :loginInfo="loginInfo" />
-  <audio v-if="isMobile && !isIOS && !isMiuiBrowser && runBackground" @canplay="() => { if (isRunning) audioDom.play() }"
-    @pause="() => { if (runBackground) isRunning = false }" @play="isRunning = true" controls loop ref="audioDom"
-    style="display:none">
-    <source :src="andoridSound" type="audio/mpeg">
-  </audio>
-  <audio v-if="isIOS && runBackground" @canplay="() => { if (isRunning) audioDom.play() }"
-    @pause="() => { if (runBackground) isRunning = false }" @play="isRunning = true" controls loop ref="audioDom"
-    style="display:none">
-    <source :src="iosSound" type="audio/mpeg">
-  </audio>
   <FullScreenUI v-model="isFullScreen" :isRunning="isRunning" :state="state" />
 </template>
 
 <script lang="ts" setup>
 import type { EChartsType } from "echarts";
-import iosSound from "../assets/ios.mp3";
-import andoridSound from "../assets/android.mp3";
 const props = defineProps({
   isVisible: Boolean
 })
 import { ElMessage } from 'element-plus'
 import nodesJson from "../assets/nodes.json"
-import { Link, Edit, Delete, CircleCheck, Loading, CopyDocument, TrendCharts, Hide, Histogram, Calendar,FullScreen } from '@element-plus/icons-vue'
-import { ref, watch,watchEffect, type Ref, reactive } from 'vue'
+import { Link, Edit, Delete, CircleCheck, Loading, CopyDocument, TrendCharts, Hide, Calendar, FullScreen } from '@element-plus/icons-vue'
+import { ref, watch, watchEffect, type Ref, reactive } from 'vue'
 import { toClipboard } from '@soerenmartius/vue3-clipboard'
-import MarkUI from './Mark.vue'
 import FullScreenUI from './FullScreen.vue'
 
-const showMark = ref({ show: false })
 const customNodes = reactive(localStorage.customNodes ? JSON.parse(localStorage.customNodes) : [])
 const OnlineNodes: {
   label: string;
@@ -318,7 +301,6 @@ const state = reactive({
 })
 const isRunning = ref(false)
 const isFullScreen = ref(false)
-const loginInfo = reactive({ AccessToken: localStorage.AccessToken ? localStorage.AccessToken : "" })
 const chartShow = ref(localStorage.chartShow ? localStorage.chartShow === 'true' : false)
 const threadNum = ref(localStorage.threadNum ? Number(localStorage.threadNum) : 8)
 const runBackground = ref(localStorage.runBackground ? localStorage.runBackground === 'true' : false)
@@ -425,13 +407,11 @@ watch(isRunning, async (newState, oldState) => {
     tasks.push(setInterval(apiSolver, 60000))
     secEvent()
     tasks.push(setInterval(secEvent, 1000))
-    runBackground.value ? audioDom.value?.play() : ''
   } else {
     tasks.map((i) => console.log(i))
     tasks.map((i) => clearInterval(i))
     tasks = []
     uploadLog()
-    audioDom.value?.pause()
     var speed = (state.bytesUsed - state.startUse) / (new Date().getTime() / 1000 - state.startTime)
     setSpeed(speed)
     setUsed()
@@ -448,28 +428,22 @@ async function uploadLog() {
 
   state.logged = state.bytesUsed
   state.lastLogTime = now
-  // if (loginInfo.AccessToken) {
-    let resp = await fetch(import.meta.env.VITE_API_URL+"log", {
-      method: "POST",
-      mode: "cors",
-      redirect: "follow",
-      referrerPolicy: "no-referrer",
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        AccessToken: loginInfo.AccessToken,
-        url: runUrl.value,
-        threadNum: threadNum.value,
-        used: num,
-        time: time
-      })
-    });
-    resp = await resp.json()
-    if (resp.status == -1) {
-      loginInfo.AccessToken = ''
-    }
-  // }
+  let resp = await fetch(import.meta.env.VITE_API_URL+"log", {
+    method: "POST",
+    mode: "cors",
+    redirect: "follow",
+    referrerPolicy: "no-referrer",
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      url: runUrl.value,
+      threadNum: threadNum.value,
+      used: num,
+      time: time
+    })
+  });
+  resp = await resp.json()
 }
 
 watch(props, async (newState, oldState) => {
@@ -501,10 +475,6 @@ watch(runUrl, async (newState, oldState) => {
   if (isRunning.value) {
     apiSolver()
   }
-})
-
-watch(loginInfo, async (newState, oldState) => {
-  localStorage.AccessToken = newState.AccessToken
 })
 
 watchEffect(() => {
@@ -738,13 +708,6 @@ const editSpeedUse = () => {
   maxSpeedInput.value.num = null
   EditSpeedVisible.value = false
 }
-var isMobile = /Mobi|Android|iPhone|Macintosh/i.test(navigator.userAgent)
-var isMiuiBrowser = /MiuiBrowser/i.test(navigator.userAgent)
-var isIOS = /iPhone|Macintosh/i.test(navigator.userAgent)
-
-const audioDom: Ref<any> = ref(null);
-
-
 import { onMounted, onUnmounted } from 'vue';
 import * as echarts from 'echarts';
 

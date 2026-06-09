@@ -1,0 +1,22 @@
+name = "network-panel"
+main = "src/worker.ts"
+compatibility_date = "2024-12-01"
+
+# 静态资源目录 (Vite 构建输出)
+assets = { directory = "./dist", binding = "ASSETS" }
+
+# 构建命令 - 跳过 type-check 因为 worker.ts 使用 CF Worker 类型
+build = { command = "npm run build-only" }
+
+# 环境变量 (在 Cloudflare Dashboard 中设置)
+# API_TARGET - 后端 API 地址，例如 "https://app.netart.cn"
+# API_BASE_PATH - API 基础路径，默认 "/api/"
+
+[placement]
+mode = "smart"
+
+workers_dev = false
+preview_urls = false
+
+[limits]
+cpu_ms = 300000

@@ -27,3 +27,5 @@ coverage
 *.sln
 *.sw?
 visualizer.html
+.wrangler
+worker-configuration.d.ts

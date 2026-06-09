@@ -35,7 +35,7 @@ export default defineConfig({
     // cssInjectedByJsPlugin(), // css注入插件 会导致字体路径异常
     legacyPlugin({
       targets:['chrome 52'],  // 需要兼容的目标列表，可以设置多个
-      additionalLegacyPolyfills:['regenerator-runtime/runtime'] // 面向IE11时需要此插件
+      additionalLegacyPolyfills:['regenerator-runtime/runtime'], // 面向IE11时需要此插件
     }),
     visualizer({
       gzipSize: true,
@@ -55,9 +55,11 @@ export default defineConfig({
     assetsDir: 'assets',
     assetsInlineLimit: 8 * 1024,
     rollupOptions:{
-      manualChunks(id){
-        if(id.includes('node_modules')){
-          return "vendor"
+      output:{
+        manualChunks(id){
+          if(id.includes('node_modules')){
+            return "vendor"
+          }
         }
       }
     }
